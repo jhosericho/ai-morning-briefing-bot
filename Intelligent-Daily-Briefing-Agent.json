@@ -1,0 +1,257 @@
+{
+  "name": "Intelligent-Daily-Briefing-Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 6
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -160,
+        -32
+      ],
+      "id": "52948bf9-b45a-4f6e-9a68-75ab02d199ad",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "supriyonomuharom7455@gmail.com",
+          "mode": "list",
+          "cachedResultName": "supriyonomuharom7455@gmail.com"
+        },
+        "timeMax": "={{ $now.plus({ days: 1 }).endOf('day') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        192,
+        -224
+      ],
+      "id": "63c92e34-fb18-4ece-86fb-dd22df3884fc",
+      "name": "Get many events",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "sfX8OFIoR9xfqh3y",
+          "name": "Google Calendar OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "value": "36a990e1-dd8d-8028-b682-c230cfe11e61",
+          "mode": "list",
+          "cachedResultName": "36a990e1-dd8d-8028-b682-c230cfe11e61",
+          "cachedResultUrl": "https://www.notion.so/36a990e1dd8d8028b682c230cfe11e61"
+        },
+        "filterType": "manual",
+        "filters": {
+          "conditions": [
+            {
+              "key": "Status Pelajari|status",
+              "condition": "does_not_equal",
+              "statusValue": "Done"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        192,
+        112
+      ],
+      "id": "8108b1fa-180f-4ee5-902d-2bf126460f58",
+      "name": "Get many database pages",
+      "credentials": {
+        "notionOAuth2Api": {
+          "id": "TC4768j393x6iAXl",
+          "name": "Notion OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        416,
+        -32
+      ],
+      "id": "ae46600a-dca8-497e-a3f5-6fef7ec244d4",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Kamu adalah asisten kuliah personal yang cerdas, keren, dan estetik untuk wilayah Samarinda (menggunakan zona waktu WITA). Tugasmu adalah membuat teks briefing pagi jam 6 subuh yang rapi, santai, tapi terstruktur dengan baik.\n\nBerikut adalah DATA ASLI yang kamu terima hari ini (PENTING: Jangan pernah mengarang data, jam, atau nama mata kuliah di luar data ini!):\n\n1. DATA GOOGLE CALENDAR (Jadwal/Kegiatan Hari Ini):\n- Nama Acara: {{ $json.summary }}\n- Jam Mulai : {{ $json.start.dateTime }}WITA\n\n2. DATA NOTION (Tugas/Modul Belajar):\n- Nama Modul: {{ $json.name }} dan link nya: {{ $json.property_link_google_drive }}\n- Status: {{ $json.property_status_pelajari }}\n\nFormat output harus selalu mengikuti template di bawah ini:\n\n**Selamat Pagi**\n\n\"[Masukkan 1 kalimat quotes motivasi pagi yang estetik dan menenangkan di sini]\"\n\n**Jadwal Hari Ini:**\n[Jika DATA GOOGLE CALENDAR kosong atau undefined, tulis: \"* Tidak ada jadwal kuliah hari ini, jadi kamu bisa menggunakan waktunya untuk santai/bebas! 😎\"]\n[Jika DATA GOOGLE CALENDAR ada isinya, tulis: \"* [Nama Acara] - [Jam Mulai] - [Jam Selesai] WITA\"]\n\n**Tanggungan Modul Hari Ini:**\n[Jika DATA NOTION kosong, tulis: \"* Semua modul sudah aman selesai! 🎉\"]\n[Jika DATA NOTION ada isinya, tulis: \"* [Nama Modul] ([Status])\"]\n\n[Masukkan 1-2 kalimat penutup yang menyemangati khas anak perkuliahan teknik/elektro yang santai tapi ambis]\n\nThis message was sent automatically with n8n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        624,
+        -32
+      ],
+      "id": "d274738a-e189-445c-9da3-f98afef85d82",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "llama-3.1-8b-instant",
+          "mode": "list",
+          "cachedResultName": "llama-3.1-8b-instant"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        496,
+        176
+      ],
+      "id": "9593c524-269d-4234-b5a4-9ef660c7fca9",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "qVkJSa49oGpcNXWG",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "5003152739",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        976,
+        -32
+      ],
+      "id": "73eeee4b-659a-42f6-85c3-82b64b83ffe7",
+      "name": "Send a text message",
+      "webhookId": "3065a01e-5708-429f-a627-92d4d29bc1c4",
+      "credentials": {
+        "telegramApi": {
+          "id": "ypopM1Q6jcs49wsZ",
+          "name": "Telegram account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get many events",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get many database pages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many events": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many database pages": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "1bcba4c6-e2c5-4b1a-87b8-880912f80d4e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "456ae4f5c410fe448f3ca28ff3b958e46a0573d8a5531a06ff141f620afb3afa"
+  },
+  "id": "fmTEWhJKcYWAsHnS",
+  "tags": []
+}
